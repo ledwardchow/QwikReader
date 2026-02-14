@@ -47,7 +47,7 @@ struct SidebarView: View {
                             }
                         }
                     } icon: {
-                        Image(systemName: "circle.badge")
+                        Image(systemName: "envelope.badge")
                             .foregroundStyle(.orange)
                     }
                 }
@@ -85,6 +85,17 @@ struct SidebarView: View {
                                     .foregroundStyle(.indigo)
                             }
                         }
+                        .swipeActions(edge: .trailing) {
+                            Button {
+                                let feedIDs = cloudKit.feeds.filter { $0.folderID == folder.id }.map(\.id)
+                                for feedID in feedIDs {
+                                    feedManager.markAllAsRead(for: feedID)
+                                }
+                            } label: {
+                                Label("Mark as Read", systemImage: "envelope.open")
+                            }
+                            .tint(.blue)
+                        }
                     }
                     .onDelete(perform: deleteFolder)
                 } header: {
@@ -98,6 +109,14 @@ struct SidebarView: View {
                     NavigationLink(value: SidebarItem.feed(feed)) {
                         FeedRowView(feed: feed)
                     }
+                    .swipeActions(edge: .trailing) {
+                        Button {
+                            feedManager.markAllAsRead(for: feed.id)
+                        } label: {
+                            Label("Mark as Read", systemImage: "envelope.open")
+                        }
+                        .tint(.blue)
+                    }
                 }
                 .onDelete(perform: deleteFeed)
             } header: {
@@ -110,7 +129,7 @@ struct SidebarView: View {
                 }
             }
         }
-        .listStyle(.sidebar)
+        .listStyle(.plain)
         .navigationTitle("QwikReader")
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {

@@ -46,36 +46,29 @@ struct ArticleDetailView: View {
                     Image(systemName: "textformat.size")
                 }
 
-                Menu {
-                    if let url = article.url {
-                        Button {
-                            showWebView = true
-                        } label: {
-                            Label("Open in Browser", systemImage: "safari")
-                        }
-
-                        ShareLink(item: url) {
-                            Label("Share", systemImage: "square.and.arrow.up")
-                        }
+                if let url = article.url {
+                    ShareLink(item: url) {
+                        Image(systemName: "square.and.arrow.up")
                     }
 
                     Button {
-                        Task {
-                            let updated = await offlineManager.downloadArticle(article)
-                            if let index = feedManager.articles[article.feedID]?.firstIndex(where: { $0.id == article.id }) {
-                                feedManager.articles[article.feedID]?[index] = updated
-                            }
-                        }
+                        showWebView = true
                     } label: {
-                        Label(
-                            article.isDownloaded ? "Downloaded" : "Download for Offline",
-                            systemImage: article.isDownloaded ? "checkmark.circle.fill" : "arrow.down.circle"
-                        )
+                        Image(systemName: "safari")
                     }
-                    .disabled(article.isDownloaded)
-                } label: {
-                    Image(systemName: "ellipsis.circle")
                 }
+
+                Button {
+                    Task {
+                        let updated = await offlineManager.downloadArticle(article)
+                        if let index = feedManager.articles[article.feedID]?.firstIndex(where: { $0.id == article.id }) {
+                            feedManager.articles[article.feedID]?[index] = updated
+                        }
+                    }
+                } label: {
+                    Image(systemName: article.isDownloaded ? "checkmark.circle.fill" : "arrow.down.circle")
+                }
+                .disabled(article.isDownloaded)
             }
         }
         .sheet(isPresented: $showWebView) {

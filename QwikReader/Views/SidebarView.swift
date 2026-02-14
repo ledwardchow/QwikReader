@@ -10,6 +10,8 @@ struct SidebarView: View {
     @State private var showingSettings = false
     @State private var newFolderName = ""
     @State private var editMode: EditMode = .inactive
+    @State private var feedToDelete: Feed?
+    @State private var folderToDelete: FeedFolder?
 
     /// When true, the List uses a selection binding (iPad NavigationSplitView).
     /// When false, NavigationLink values drive NavigationStack (iPhone).
@@ -100,6 +102,36 @@ struct SidebarView: View {
                     newFolderName = ""
                 }
             }
+        }
+        .alert("Delete Feed", isPresented: Binding(
+            get: { feedToDelete != nil },
+            set: { if !$0 { feedToDelete = nil } }
+        )) {
+            Button("Cancel", role: .cancel) { feedToDelete = nil }
+            Button("Delete", role: .destructive) {
+                if let feed = feedToDelete {
+                    Task { try? await feedManager.removeFeed(feed) }
+                    feedToDelete = nil
+                }
+            }
+        } message: {
+            if let feed = feedToDelete {
+                Text("Are you sure you want to delete \"\(feed.title)\"? All cached articles will be removed.")
+            }
+        }
+        .alert("Delete Folder", isPresented: Binding(
+            get: { folderToDelete != nil },
+            set: { if !$0 { folderToDelete = nil } }
+        )) {
+            Button("Cancel", role: .cancel) { folderToDelete = nil }
+            Button("Delete", role: .destructive) {
+                if let folder = folderToDelete {
+                    Task { try? await cloudKit.deleteFolder(folder) }
+                    folderToDelete = nil
+                }
+            }
+        } message: {
+            Text("Are you sure you want to delete this folder? Feeds inside will be moved out of the folder.")
         }
     }
 
@@ -193,6 +225,11 @@ struct SidebarView: View {
                         }
                     }
                     .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            folderToDelete = folder
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
                         Button {
                             let feedIDs = cloudKit.feeds.filter { $0.folderID == folder.id }.map(\.id)
                             for feedID in feedIDs {
@@ -204,7 +241,11 @@ struct SidebarView: View {
                         .tint(.blue)
                     }
                 }
-                .onDelete(perform: deleteFolder)
+                .onDelete { offsets in
+                    if let index = offsets.first {
+                        folderToDelete = cloudKit.folders[index]
+                    }
+                }
             } header: {
                 Text("Folders")
             }
@@ -217,6 +258,11 @@ struct SidebarView: View {
                     FeedRowView(feed: feed)
                 }
                 .swipeActions(edge: .trailing) {
+                    Button(role: .destructive) {
+                        feedToDelete = feed
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
                     Button {
                         feedManager.markAllAsRead(for: feed.id)
                     } label: {
@@ -225,7 +271,11 @@ struct SidebarView: View {
                     .tint(.blue)
                 }
             }
-            .onDelete(perform: deleteFeed)
+            .onDelete { offsets in
+                if let index = offsets.first {
+                    feedToDelete = cloudKit.feeds[index]
+                }
+            }
         } header: {
             HStack {
                 Text("Feeds")
@@ -237,19 +287,6 @@ struct SidebarView: View {
         }
     }
 
-    private func deleteFeed(_ offsets: IndexSet) {
-        for index in offsets {
-            let feed = cloudKit.feeds[index]
-            Task { try? await feedManager.removeFeed(feed) }
-        }
-    }
-
-    private func deleteFolder(_ offsets: IndexSet) {
-        for index in offsets {
-            let folder = cloudKit.folders[index]
-            Task { try? await cloudKit.deleteFolder(folder) }
-        }
-    }
 }
 
 struct FeedRowView: View {

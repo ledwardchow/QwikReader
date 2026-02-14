@@ -6,13 +6,14 @@ struct ContentView: View {
 
     @State private var selectedSidebarItem: SidebarItem? = .allArticles
     @State private var columnVisibility: NavigationSplitViewVisibility = .automatic
+    @State private var selectedArticle: Article?
 
     var body: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             SidebarView(selectedItem: $selectedSidebarItem)
         } content: {
             articleList(for: selectedSidebarItem ?? .allArticles)
-                .navigationDestination(for: Article.self) { article in
+                .navigationDestination(item: $selectedArticle) { article in
                     ArticleDetailView(article: article)
                 }
         } detail: {
@@ -26,21 +27,24 @@ struct ContentView: View {
             }
         }
         .navigationSplitViewStyle(.balanced)
+        .onChange(of: selectedSidebarItem) { _, _ in
+            selectedArticle = nil
+        }
     }
 
     @ViewBuilder
     private func articleList(for item: SidebarItem) -> some View {
         switch item {
         case .allArticles:
-            ArticleListView(title: "All Articles", articles: feedManager.allArticles)
+            ArticleListView(title: "All Articles", articles: feedManager.allArticles, selectedArticle: $selectedArticle)
         case .unread:
-            ArticleListView(title: "Unread", articles: feedManager.unreadArticles)
+            ArticleListView(title: "Unread", articles: feedManager.unreadArticles, selectedArticle: $selectedArticle)
         case .starred:
-            ArticleListView(title: "Starred", articles: feedManager.starredArticles)
+            ArticleListView(title: "Starred", articles: feedManager.starredArticles, selectedArticle: $selectedArticle)
         case .folder(let folder):
-            ArticleListView(title: folder.name, articles: feedManager.articlesInFolder(folder.id))
+            ArticleListView(title: folder.name, articles: feedManager.articlesInFolder(folder.id), selectedArticle: $selectedArticle)
         case .feed(let feed):
-            ArticleListView(title: feed.title, articles: feedManager.articles(for: feed.id))
+            ArticleListView(title: feed.title, articles: feedManager.articles(for: feed.id), selectedArticle: $selectedArticle)
         }
     }
 }
@@ -50,12 +54,14 @@ struct ContentView: View {
 struct CompactContentView: View {
     @ObservedObject var feedManager = FeedManager.shared
 
+    @State private var selectedArticle: Article?
+
     var body: some View {
         NavigationStack {
             SidebarView()
                 .navigationDestination(for: SidebarItem.self) { item in
                     articleList(for: item)
-                        .navigationDestination(for: Article.self) { article in
+                        .navigationDestination(item: $selectedArticle) { article in
                             ArticleDetailView(article: article)
                         }
                 }
@@ -66,15 +72,15 @@ struct CompactContentView: View {
     private func articleList(for item: SidebarItem) -> some View {
         switch item {
         case .allArticles:
-            ArticleListView(title: "All Articles", articles: feedManager.allArticles)
+            ArticleListView(title: "All Articles", articles: feedManager.allArticles, selectedArticle: $selectedArticle)
         case .unread:
-            ArticleListView(title: "Unread", articles: feedManager.unreadArticles)
+            ArticleListView(title: "Unread", articles: feedManager.unreadArticles, selectedArticle: $selectedArticle)
         case .starred:
-            ArticleListView(title: "Starred", articles: feedManager.starredArticles)
+            ArticleListView(title: "Starred", articles: feedManager.starredArticles, selectedArticle: $selectedArticle)
         case .folder(let folder):
-            ArticleListView(title: folder.name, articles: feedManager.articlesInFolder(folder.id))
+            ArticleListView(title: folder.name, articles: feedManager.articlesInFolder(folder.id), selectedArticle: $selectedArticle)
         case .feed(let feed):
-            ArticleListView(title: feed.title, articles: feedManager.articles(for: feed.id))
+            ArticleListView(title: feed.title, articles: feedManager.articles(for: feed.id), selectedArticle: $selectedArticle)
         }
     }
 }

@@ -4,6 +4,9 @@ struct ArticleRowView: View {
     let article: Article
     let feedTitle: String?
     let layout: ArticleListLayout
+    var isSelected: Bool = false
+
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         switch layout {
@@ -16,7 +19,50 @@ struct ArticleRowView: View {
         }
     }
 
-    // MARK: - Large Layout (like Newsify default)
+    // MARK: - Selection Colors
+
+    private var selectionBackground: Color {
+        Color.accentColor
+    }
+
+    private var selectedPrimaryText: Color {
+        .white
+    }
+
+    private var selectedSecondaryText: Color {
+        .white.opacity(0.7)
+    }
+
+    private var selectedAccentText: Color {
+        .white.opacity(0.85)
+    }
+
+    private func titleColor(isRead: Bool) -> Color {
+        if isSelected { return selectedPrimaryText }
+        return isRead ? .secondary : .primary
+    }
+
+    private var summaryColor: Color {
+        isSelected ? selectedSecondaryText : .secondary
+    }
+
+    private var feedTitleColor: Color {
+        isSelected ? selectedAccentText : .accentColor
+    }
+
+    private var captionColor: Color {
+        isSelected ? selectedSecondaryText : .secondary
+    }
+
+    private var starColor: Color {
+        isSelected ? .white : .yellow
+    }
+
+    private var downloadColor: Color {
+        isSelected ? .white : .green
+    }
+
+    // MARK: - Large Layout
 
     private var largeLayout: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -49,12 +95,12 @@ struct ArticleRowView: View {
                     .font(.headline)
                     .fontWeight(.semibold)
                     .lineLimit(3)
-                    .foregroundStyle(article.isRead ? .secondary : .primary)
+                    .foregroundStyle(titleColor(isRead: article.isRead))
 
                 if !article.displaySummary.isEmpty {
                     Text(article.displaySummary)
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(summaryColor)
                         .lineLimit(2)
                 }
 
@@ -63,13 +109,13 @@ struct ArticleRowView: View {
                         Text(feedTitle)
                             .font(.caption)
                             .fontWeight(.medium)
-                            .foregroundColor(.accentColor)
+                            .foregroundColor(feedTitleColor)
                     }
 
                     if let author = article.author {
                         Text(author)
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(captionColor)
                     }
 
                     Spacer()
@@ -78,21 +124,25 @@ struct ArticleRowView: View {
                         if article.isDownloaded {
                             Image(systemName: "arrow.down.circle.fill")
                                 .font(.caption2)
-                                .foregroundStyle(.green)
+                                .foregroundStyle(downloadColor)
                         }
                         if article.isStarred {
                             Image(systemName: "star.fill")
                                 .font(.caption2)
-                                .foregroundStyle(.yellow)
+                                .foregroundStyle(starColor)
                         }
                         Text(article.relativeDate)
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(captionColor)
                     }
                 }
             }
         }
-        .padding(.vertical, 4)
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(isSelected ? selectionBackground : .clear)
+        )
     }
 
     // MARK: - Magazine / Grid Layout
@@ -126,23 +176,25 @@ struct ArticleRowView: View {
                 .font(.subheadline)
                 .fontWeight(.semibold)
                 .lineLimit(2)
-                .foregroundStyle(article.isRead ? .secondary : .primary)
+                .foregroundStyle(titleColor(isRead: article.isRead))
 
             HStack {
                 if let feedTitle {
                     Text(feedTitle)
                         .font(.caption2)
-                        .foregroundColor(.accentColor)
+                        .foregroundColor(feedTitleColor)
                 }
                 Spacer()
                 Text(article.relativeDate)
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(captionColor)
             }
         }
         .padding(8)
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(isSelected ? selectionBackground : Color(.secondarySystemGroupedBackground))
+        )
     }
 
     // MARK: - Compact Layout
@@ -154,34 +206,34 @@ struct ArticleRowView: View {
                     .font(.subheadline)
                     .fontWeight(.medium)
                     .lineLimit(2)
-                    .foregroundStyle(article.isRead ? .secondary : .primary)
+                    .foregroundStyle(titleColor(isRead: article.isRead))
 
                 HStack(spacing: 6) {
                     if !article.isRead {
                         Circle()
-                            .fill(Color.accentColor)
+                            .fill(isSelected ? Color.white : Color.accentColor)
                             .frame(width: 6, height: 6)
                     }
 
                     if let feedTitle {
                         Text(feedTitle)
                             .font(.caption)
-                            .foregroundColor(.accentColor)
+                            .foregroundColor(feedTitleColor)
                     }
 
                     Text(article.relativeDate)
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(captionColor)
 
                     if article.isStarred {
                         Image(systemName: "star.fill")
                             .font(.caption2)
-                            .foregroundStyle(.yellow)
+                            .foregroundStyle(starColor)
                     }
                     if article.isDownloaded {
                         Image(systemName: "arrow.down.circle.fill")
                             .font(.caption2)
-                            .foregroundStyle(.green)
+                            .foregroundStyle(downloadColor)
                     }
                 }
             }
@@ -206,7 +258,12 @@ struct ArticleRowView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 8))
             }
         }
-        .padding(.vertical, 4)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(isSelected ? selectionBackground : .clear)
+        )
     }
 }
 

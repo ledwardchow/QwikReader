@@ -9,8 +9,8 @@ struct ArticleListView: View {
     @ObservedObject var themeManager = ThemeManager.shared
     @ObservedObject var offlineManager = OfflineManager.shared
 
+    @Binding var selectedArticle: Article?
     @State private var searchText = ""
-    @State private var selectedArticle: Article?
 
     private var filteredArticles: [Article] {
         if searchText.isEmpty {
@@ -60,7 +60,8 @@ struct ArticleListView: View {
                             ArticleRowView(
                                 article: article,
                                 feedTitle: feedTitle(for: article),
-                                layout: .magazine
+                                layout: .magazine,
+                                isSelected: selectedArticle?.id == article.id
                             )
                         }
                         .buttonStyle(.plain)
@@ -70,44 +71,52 @@ struct ArticleListView: View {
                 .padding(.horizontal)
             }
         default:
-            List(filteredArticles) { article in
-                NavigationLink(value: article) {
-                    ArticleRowView(
-                        article: article,
-                        feedTitle: feedTitle(for: article),
-                        layout: themeManager.articleListLayout
-                    )
-                }
-                .swipeActions(edge: .leading) {
+            List {
+                ForEach(filteredArticles) { article in
                     Button {
-                        feedManager.toggleStarred(article)
+                        selectedArticle = article
                     } label: {
-                        Image(systemName: article.isStarred ? "star.slash" : "star.fill")
+                        ArticleRowView(
+                            article: article,
+                            feedTitle: feedTitle(for: article),
+                            layout: themeManager.articleListLayout,
+                            isSelected: selectedArticle?.id == article.id
+                        )
                     }
-                    .tint(.yellow)
-                }
-                .swipeActions(edge: .trailing) {
-                    Button {
-                        feedManager.markAsRead(article)
-                    } label: {
-                        Image(systemName: "checkmark")
-                    }
-                    .tint(.blue)
-
-                    Button {
-                        Task {
-                            let updated = await offlineManager.downloadArticle(article)
-                            if let index = feedManager.articles[article.feedID]?.firstIndex(where: { $0.id == article.id }) {
-                                feedManager.articles[article.feedID]?[index] = updated
-                            }
+                    .buttonStyle(.plain)
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                    .swipeActions(edge: .leading) {
+                        Button {
+                            feedManager.toggleStarred(article)
+                        } label: {
+                            Image(systemName: article.isStarred ? "star.slash" : "star.fill")
                         }
-                    } label: {
-                        Image(systemName: "arrow.down.circle")
+                        .tint(.yellow)
                     }
-                    .tint(.green)
+                    .swipeActions(edge: .trailing) {
+                        Button {
+                            feedManager.markAsRead(article)
+                        } label: {
+                            Image(systemName: "checkmark")
+                        }
+                        .tint(.blue)
+
+                        Button {
+                            Task {
+                                let updated = await offlineManager.downloadArticle(article)
+                                if let index = feedManager.articles[article.feedID]?.firstIndex(where: { $0.id == article.id }) {
+                                    feedManager.articles[article.feedID]?[index] = updated
+                                }
+                            }
+                        } label: {
+                            Image(systemName: "arrow.down.circle")
+                        }
+                        .tint(.green)
+                    }
+                    .contextMenu { articleContextMenu(article) }
                 }
-                .listRowSeparator(.hidden)
-                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
             }
             .listStyle(.plain)
         }
@@ -197,6 +206,10 @@ struct ArticleListView: View {
 
 #Preview {
     NavigationStack {
-        ArticleListView(title: "All Articles", articles: PreviewFixtures.articles)
+        ArticleListView(
+            title: "All Articles",
+            articles: PreviewFixtures.articles,
+            selectedArticle: .constant(nil)
+        )
     }
 }

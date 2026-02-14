@@ -204,6 +204,7 @@ struct ArticleListView: View {
     }
 }
 
+#if DEBUG
 #Preview {
     NavigationStack {
         ArticleListView(
@@ -213,3 +214,4 @@ struct ArticleListView: View {
         )
     }
 }
+#endif

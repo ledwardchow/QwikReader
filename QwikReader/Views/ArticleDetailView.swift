@@ -463,8 +463,10 @@ final class ContentBlockerManager {
     }
 }
 
+#if DEBUG
 #Preview {
     NavigationStack {
         ArticleDetailView(article: PreviewFixtures.article)
     }
 }
+#endif

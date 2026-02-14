@@ -24,13 +24,19 @@ struct AdaptiveContentView: View {
             }
         }
         .task {
+            #if DEBUG
             if !ProcessInfo.isRunningForPreviews {
                 await feedManager.refreshAllFeeds()
             }
+            #else
+            await feedManager.refreshAllFeeds()
+            #endif
         }
     }
 }
 
+#if DEBUG
 #Preview {
     AdaptiveContentView()
 }
+#endif

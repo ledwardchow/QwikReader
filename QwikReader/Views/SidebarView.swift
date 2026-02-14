@@ -333,6 +333,7 @@ enum SidebarItem: Hashable {
     case feed(Feed)
 }
 
+#if DEBUG
 #Preview("Sidebar (Split)") {
     NavigationStack {
         SidebarView(selectedItem: .constant(.allArticles))
@@ -344,3 +345,4 @@ enum SidebarItem: Hashable {
         FeedRowView(feed: PreviewFixtures.feed)
     }
 }
+#endif

@@ -267,6 +267,7 @@ struct ArticleRowView: View {
     }
 }
 
+#if DEBUG
 #Preview("Large") {
     ArticleRowView(
         article: PreviewFixtures.article,
@@ -293,3 +294,4 @@ struct ArticleRowView: View {
     )
     .padding()
 }
+#endif

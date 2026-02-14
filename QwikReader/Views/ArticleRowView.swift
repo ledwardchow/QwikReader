@@ -27,6 +27,7 @@ struct ArticleRowView: View {
                         image
                             .resizable()
                             .aspectRatio(contentMode: .fill)
+                            .frame(maxWidth: .infinity)
                             .frame(height: 180)
                             .clipped()
                     case .failure:

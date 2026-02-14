@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct SidebarView: View {
+    @Binding var selectedItem: SidebarItem?
+
     @ObservedObject var cloudKit = CloudKitManager.shared
     @ObservedObject var feedManager = FeedManager.shared
     @State private var showingAddFeed = false
@@ -9,8 +11,12 @@ struct SidebarView: View {
     @State private var newFolderName = ""
     @State private var editMode: EditMode = .inactive
 
+    init(selectedItem: Binding<SidebarItem?> = .constant(nil)) {
+        self._selectedItem = selectedItem
+    }
+
     var body: some View {
-        List {
+        List(selection: $selectedItem) {
             // Smart Feeds Section
             Section {
                 NavigationLink(value: SidebarItem.allArticles) {

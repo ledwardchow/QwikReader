@@ -44,16 +44,15 @@ struct ArticleListView: View {
         }
     }
 
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
     @ViewBuilder
     private var articleContent: some View {
         switch themeManager.articleListLayout {
         case .magazine:
             ScrollView {
                 LazyVGrid(
-                    columns: [
-                        GridItem(.flexible(), spacing: 12),
-                        GridItem(.flexible(), spacing: 12)
-                    ],
+                    columns: [GridItem(.adaptive(minimum: 240), spacing: 12)],
                     spacing: 12
                 ) {
                     ForEach(filteredArticles) { article in
@@ -108,6 +107,7 @@ struct ArticleListView: View {
                     .tint(.green)
                 }
                 .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
             }
             .listStyle(.plain)
         }

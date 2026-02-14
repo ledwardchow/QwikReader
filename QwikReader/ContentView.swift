@@ -5,35 +5,24 @@ struct ContentView: View {
     @ObservedObject var feedManager = FeedManager.shared
 
     @State private var selectedSidebarItem: SidebarItem? = .allArticles
-    @State private var selectedArticle: Article?
     @State private var columnVisibility: NavigationSplitViewVisibility = .automatic
 
     var body: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
-            SidebarView()
+            SidebarView(selectedItem: $selectedSidebarItem)
         } content: {
-            Group {
-                if let item = selectedSidebarItem {
-                    articleList(for: item)
-                } else {
-                    ArticleListView(title: "All Articles", articles: feedManager.allArticles)
+            articleList(for: selectedSidebarItem ?? .allArticles)
+                .navigationDestination(for: Article.self) { article in
+                    ArticleDetailView(article: article)
                 }
-            }
-            .navigationDestination(for: Article.self) { article in
-                ArticleDetailView(article: article)
-            }
         } detail: {
-            if let article = selectedArticle {
-                ArticleDetailView(article: article)
-            } else {
-                VStack(spacing: 16) {
-                    Image(systemName: "newspaper")
-                        .font(.system(size: 56))
-                        .foregroundStyle(.quaternary)
-                    Text("Select an article to read")
-                        .font(.title3)
-                        .foregroundStyle(.secondary)
-                }
+            VStack(spacing: 16) {
+                Image(systemName: "newspaper")
+                    .font(.system(size: 56))
+                    .foregroundStyle(.quaternary)
+                Text("Select an article to read")
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
             }
         }
         .navigationSplitViewStyle(.balanced)

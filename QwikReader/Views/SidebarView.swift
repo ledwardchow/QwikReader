@@ -98,7 +98,9 @@ struct SidebarView: View {
             }
         }
         .task {
-            await feedManager.refreshAllFeeds()
+            if !ProcessInfo.isRunningForPreviews {
+                await feedManager.refreshAllFeeds()
+            }
         }
     }
 
@@ -293,4 +295,16 @@ enum SidebarItem: Hashable {
     case starred
     case folder(FeedFolder)
     case feed(Feed)
+}
+
+#Preview("Sidebar (Split)") {
+    NavigationStack {
+        SidebarView(selectedItem: .constant(.allArticles))
+    }
+}
+
+#Preview("Feed Row") {
+    List {
+        FeedRowView(feed: PreviewFixtures.feed)
+    }
 }

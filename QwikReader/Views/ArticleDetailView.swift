@@ -469,3 +469,9 @@ final class ContentBlockerManager {
         }
     }
 }
+
+#Preview {
+    NavigationStack {
+        ArticleDetailView(article: PreviewFixtures.article)
+    }
+}

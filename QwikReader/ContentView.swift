@@ -78,3 +78,11 @@ struct CompactContentView: View {
         }
     }
 }
+
+#Preview("iPad Split View") {
+    ContentView()
+}
+
+#Preview("iPhone Stack View") {
+    CompactContentView()
+}

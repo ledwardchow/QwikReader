@@ -194,3 +194,9 @@ struct ArticleListView: View {
         cloudKit.feeds.first(where: { $0.id == article.feedID })?.title
     }
 }
+
+#Preview {
+    NavigationStack {
+        ArticleListView(title: "All Articles", articles: PreviewFixtures.articles)
+    }
+}

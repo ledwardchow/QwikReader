@@ -169,3 +169,7 @@ struct SuggestedFeed: Identifiable {
         self.url = url
     }
 }
+
+#Preview {
+    AddFeedView()
+}

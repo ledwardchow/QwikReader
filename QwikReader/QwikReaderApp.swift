@@ -22,3 +22,7 @@ struct AdaptiveContentView: View {
         }
     }
 }
+
+#Preview {
+    AdaptiveContentView()
+}

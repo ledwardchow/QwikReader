@@ -209,3 +209,30 @@ struct ArticleRowView: View {
         .padding(.vertical, 4)
     }
 }
+
+#Preview("Large") {
+    ArticleRowView(
+        article: PreviewFixtures.article,
+        feedTitle: PreviewFixtures.feed.title,
+        layout: .large
+    )
+    .padding()
+}
+
+#Preview("Magazine") {
+    ArticleRowView(
+        article: PreviewFixtures.article,
+        feedTitle: PreviewFixtures.feed.title,
+        layout: .magazine
+    )
+    .padding()
+}
+
+#Preview("Compact") {
+    ArticleRowView(
+        article: PreviewFixtures.article,
+        feedTitle: PreviewFixtures.feed.title,
+        layout: .compact
+    )
+    .padding()
+}

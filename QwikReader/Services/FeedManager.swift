@@ -7,6 +7,7 @@ final class FeedManager: ObservableObject {
 
     @Published var articles: [UUID: [Article]] = [:]  // feedID -> articles
     @Published var isRefreshing = false
+    @Published var lastRefreshedAt: Date?
 
     private let cloudKit = CloudKitManager.shared
     private let offlineManager = OfflineManager.shared
@@ -101,6 +102,7 @@ final class FeedManager: ObservableObject {
 
         saveCachedArticles()
         updateUnreadCounts()
+        lastRefreshedAt = Date()
     }
 
     func refreshFeed(_ feed: Feed) async {

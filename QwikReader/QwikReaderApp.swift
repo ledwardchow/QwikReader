@@ -13,12 +13,20 @@ struct QwikReaderApp: App {
 
 struct AdaptiveContentView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @ObservedObject private var feedManager = FeedManager.shared
 
     var body: some View {
-        if horizontalSizeClass == .regular {
-            ContentView()
-        } else {
-            CompactContentView()
+        Group {
+            if horizontalSizeClass == .regular {
+                ContentView()
+            } else {
+                CompactContentView()
+            }
+        }
+        .task {
+            if !ProcessInfo.isRunningForPreviews {
+                await feedManager.refreshAllFeeds()
+            }
         }
     }
 }

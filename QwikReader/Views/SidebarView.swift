@@ -71,10 +71,14 @@ struct SidebarView: View {
                         }
                     }
                     .disabled(feedManager.isRefreshing)
+                    if let lastRefreshed = feedManager.lastRefreshedAt {
+                        TimelineView(.periodic(from: .now, by: 60)) { _ in
+                            Text("Updated \(lastRefreshed, format: .relative(presentation: .named))")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                     Spacer()
-                    Text("Updated just now")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
                 }
             }
         }
@@ -95,11 +99,6 @@ struct SidebarView: View {
                     try? await cloudKit.saveFolder(FeedFolder(name: name, sortOrder: cloudKit.folders.count))
                     newFolderName = ""
                 }
-            }
-        }
-        .task {
-            if !ProcessInfo.isRunningForPreviews {
-                await feedManager.refreshAllFeeds()
             }
         }
     }

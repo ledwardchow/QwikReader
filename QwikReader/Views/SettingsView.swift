@@ -6,9 +6,11 @@ struct SettingsView: View {
     @ObservedObject var offlineManager = OfflineManager.shared
     @ObservedObject var cloudKit = CloudKitManager.shared
     @ObservedObject var feedManager = FeedManager.shared
+    @ObservedObject var readabilityExtractor = ReadabilityExtractor.shared
 
     @State private var showClearCacheConfirmation = false
     @State private var showClearOfflineConfirmation = false
+    @State private var showClearReaderCacheConfirmation = false
 
     var body: some View {
         NavigationStack {
@@ -79,6 +81,19 @@ struct SettingsView: View {
                     } label: {
                         Label("Clear Offline Content", systemImage: "trash")
                     }
+
+                    HStack {
+                        Text("Reading View Cache")
+                        Spacer()
+                        Text(readabilityExtractor.cacheSize())
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Button(role: .destructive) {
+                        showClearReaderCacheConfirmation = true
+                    } label: {
+                        Label("Clear Reading View Cache", systemImage: "doc.plaintext")
+                    }
                 } header: {
                     Text("Offline Reading")
                 }
@@ -138,6 +153,13 @@ struct SettingsView: View {
                 }
             } message: {
                 Text("Cached images will be re-downloaded as needed.")
+            }
+            .confirmationDialog("Clear reading view cache?", isPresented: $showClearReaderCacheConfirmation) {
+                Button("Clear Reading View Cache", role: .destructive) {
+                    readabilityExtractor.clearCache()
+                }
+            } message: {
+                Text("Cached reading view content will be re-extracted as needed.")
             }
         }
     }

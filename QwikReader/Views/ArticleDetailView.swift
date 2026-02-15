@@ -9,10 +9,15 @@ struct ArticleDetailView: View {
     @ObservedObject var themeManager = ThemeManager.shared
     @ObservedObject var offlineManager = OfflineManager.shared
     @ObservedObject var cloudKit = CloudKitManager.shared
+    @ObservedObject var readabilityExtractor = ReadabilityExtractor.shared
 
     @State private var showWebView = false
     @State private var showShareSheet = false
     @State private var showThemePicker = false
+    @State private var isReaderViewActive = false
+    @State private var readerContent: String?
+    @State private var showReaderError = false
+    @State private var readerError: String?
 
     var body: some View {
         ScrollView {
@@ -40,15 +45,25 @@ struct ArticleDetailView: View {
                         .foregroundStyle(article.isStarred ? .yellow : .secondary)
                 }
 
-                Button {
-                    showThemePicker.toggle()
-                } label: {
-                    Image(systemName: "textformat.size")
-                }
-
-                if let url = article.url {
-                    ShareLink(item: url) {
-                        Image(systemName: "square.and.arrow.up")
+                if article.url != nil {
+                    Button {
+                        if isReaderViewActive {
+                            isReaderViewActive = false
+                        } else {
+                            Task {
+                                let content = await readabilityExtractor.extract(for: article)
+                                if let content {
+                                    readerContent = content
+                                    isReaderViewActive = true
+                                    webViewHeight = 100
+                                } else if case .failed(let msg) = readabilityExtractor.extractionState[article.id] {
+                                    readerError = msg
+                                    showReaderError = true
+                                }
+                            }
+                        }
+                    } label: {
+                        Image(systemName: isReaderViewActive ? "doc.plaintext.fill" : "doc.plaintext")
                     }
 
                     Button {
@@ -58,17 +73,36 @@ struct ArticleDetailView: View {
                     }
                 }
 
-                Button {
-                    Task {
-                        let updated = await offlineManager.downloadArticle(article)
-                        if let index = feedManager.articles[article.feedID]?.firstIndex(where: { $0.id == article.id }) {
-                            feedManager.articles[article.feedID]?[index] = updated
+                Menu {
+                    Button {
+                        showThemePicker.toggle()
+                    } label: {
+                        Label("Reader Settings", systemImage: "textformat.size")
+                    }
+
+                    if let url = article.url {
+                        ShareLink(item: url) {
+                            Label("Share", systemImage: "square.and.arrow.up")
                         }
                     }
+
+                    Button {
+                        Task {
+                            let updated = await offlineManager.downloadArticle(article)
+                            if let index = feedManager.articles[article.feedID]?.firstIndex(where: { $0.id == article.id }) {
+                                feedManager.articles[article.feedID]?[index] = updated
+                            }
+                        }
+                    } label: {
+                        Label(
+                            article.isDownloaded ? "Downloaded" : "Download for Offline",
+                            systemImage: article.isDownloaded ? "checkmark.circle.fill" : "arrow.down.circle"
+                        )
+                    }
+                    .disabled(article.isDownloaded)
                 } label: {
-                    Image(systemName: article.isDownloaded ? "checkmark.circle.fill" : "arrow.down.circle")
+                    Image(systemName: "ellipsis.circle")
                 }
-                .disabled(article.isDownloaded)
             }
         }
         .sheet(isPresented: $showWebView) {
@@ -79,6 +113,23 @@ struct ArticleDetailView: View {
         }
         .sheet(isPresented: $showThemePicker) {
             readerSettings
+        }
+        .overlay {
+            if case .loading = readabilityExtractor.extractionState[article.id] {
+                VStack(spacing: 12) {
+                    ProgressView()
+                    Text("Loading Reading View...")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(themeManager.readerTheme.backgroundColor.opacity(0.9))
+            }
+        }
+        .alert("Reading View Unavailable", isPresented: $showReaderError) {
+            Button("OK") {}
+        } message: {
+            Text(readerError ?? "Could not extract article content.")
         }
         .onAppear {
             feedManager.markAsRead(article)
@@ -144,20 +195,30 @@ struct ArticleDetailView: View {
 
     private var articleBody: some View {
         Group {
-            let content = article.content ?? article.summary ?? ""
-            if content.contains("<") {
+            if isReaderViewActive, let readerContent {
                 HTMLContentView(
-                    html: content,
+                    html: readerContent,
                     theme: themeManager.readerTheme,
                     fontSize: themeManager.readerFontSize,
                     contentHeight: $webViewHeight
                 )
                 .frame(height: webViewHeight)
             } else {
-                Text(HTMLParser.stripHTML(content))
-                    .font(.system(size: themeManager.readerFontSize))
-                    .foregroundStyle(themeManager.readerTheme.textColor)
-                    .lineSpacing(6)
+                let content = article.content ?? article.summary ?? ""
+                if content.contains("<") {
+                    HTMLContentView(
+                        html: content,
+                        theme: themeManager.readerTheme,
+                        fontSize: themeManager.readerFontSize,
+                        contentHeight: $webViewHeight
+                    )
+                    .frame(height: webViewHeight)
+                } else {
+                    Text(HTMLParser.stripHTML(content))
+                        .font(.system(size: themeManager.readerFontSize))
+                        .foregroundStyle(themeManager.readerTheme.textColor)
+                        .lineSpacing(6)
+                }
             }
         }
     }

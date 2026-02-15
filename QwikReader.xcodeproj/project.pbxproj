@@ -26,6 +26,7 @@
 		AA000017 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000017 /* ThemeManager.swift */; };
 		AA000018 /* ImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000018 /* ImageCache.swift */; };
 		AA000019 /* HTMLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000019 /* HTMLParser.swift */; };
+		AA000020 /* ReadabilityExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000022 /* ReadabilityExtractor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -51,6 +52,7 @@
 		AB000019 /* HTMLParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLParser.swift; sourceTree = "<group>"; };
 		AB000020 /* QwikReader.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = QwikReader.entitlements; sourceTree = "<group>"; };
 		AB000021 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AB000022 /* ReadabilityExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadabilityExtractor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,6 +128,7 @@
 				AB000007 /* RSSParser.swift */,
 				AB000008 /* FeedManager.swift */,
 				AB000009 /* OfflineManager.swift */,
+				AB000022 /* ReadabilityExtractor.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -227,6 +230,7 @@
 				AA000017 /* ThemeManager.swift in Sources */,
 				AA000018 /* ImageCache.swift in Sources */,
 				AA000019 /* HTMLParser.swift in Sources */,
+				AA000020 /* ReadabilityExtractor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

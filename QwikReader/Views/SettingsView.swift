@@ -69,6 +69,12 @@ struct SettingsView: View {
 
                 // Offline
                 Section {
+                    Toggle("Auto-Cache Reading View", isOn: $themeManager.autoCacheReaderView)
+
+                    if themeManager.autoCacheReaderView {
+                        Stepper("Cache \(themeManager.autoCacheDays) \(themeManager.autoCacheDays == 1 ? "day" : "days") of articles", value: $themeManager.autoCacheDays, in: 1...14)
+                    }
+
                     HStack {
                         Text("Offline Storage")
                         Spacer()
@@ -96,6 +102,10 @@ struct SettingsView: View {
                     }
                 } header: {
                     Text("Offline Reading")
+                } footer: {
+                    if themeManager.autoCacheReaderView {
+                        Text("Articles from the last \(themeManager.autoCacheDays) \(themeManager.autoCacheDays == 1 ? "day" : "days") will be cached for offline reading when you refresh. Cached articles open in Reading View by default.")
+                    }
                 }
 
                 // Cache

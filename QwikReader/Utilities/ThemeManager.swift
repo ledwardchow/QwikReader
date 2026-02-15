@@ -64,6 +64,8 @@ final class ThemeManager: ObservableObject {
     @AppStorage("articleListLayout") var articleListLayout: ArticleListLayout = .large
     @AppStorage("readerFontSize") var readerFontSize: Double = 17
     @AppStorage("autoNightMode") var autoNightMode: Bool = true
+    @AppStorage("autoCacheReaderView") var autoCacheReaderView: Bool = false
+    @AppStorage("autoCacheDays") var autoCacheDays: Int = 3
 
     private init() {}
 }

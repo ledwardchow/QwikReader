@@ -67,6 +67,13 @@ final class ReadabilityExtractor: ObservableObject {
         return try? String(contentsOf: path, encoding: .utf8)
     }
 
+    func cacheArticles(_ articles: [Article]) async {
+        for article in articles {
+            guard getCachedContent(article.id) == nil else { continue }
+            _ = await extract(for: article)
+        }
+    }
+
     func clearCache() {
         try? fileManager.removeItem(at: cacheDirectory)
         try? fileManager.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)

@@ -133,6 +133,14 @@ struct ArticleDetailView: View {
         }
         .onAppear {
             feedManager.markAsRead(article)
+
+            // Auto-activate reader view if cached and setting is on
+            if themeManager.autoCacheReaderView,
+               let cached = readabilityExtractor.getCachedContent(article.id) {
+                readerContent = cached
+                isReaderViewActive = true
+                webViewHeight = 100
+            }
         }
     }
 

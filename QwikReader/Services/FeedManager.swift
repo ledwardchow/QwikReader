@@ -11,6 +11,8 @@ final class FeedManager: ObservableObject {
 
     private let cloudKit = CloudKitManager.shared
     private let offlineManager = OfflineManager.shared
+    private let readabilityExtractor = ReadabilityExtractor.shared
+    private let themeManager = ThemeManager.shared
     private let session: URLSession
 
     private init() {
@@ -103,6 +105,15 @@ final class FeedManager: ObservableObject {
         saveCachedArticles()
         updateUnreadCounts()
         lastRefreshedAt = Date()
+
+        // Auto-cache reader view for recent articles
+        if themeManager.autoCacheReaderView {
+            let cutoff = Calendar.current.date(byAdding: .day, value: -themeManager.autoCacheDays, to: Date()) ?? .distantPast
+            let recentArticles = allArticles.filter { ($0.publishedAt ?? .distantPast) >= cutoff && $0.url != nil }
+            Task.detached { [readabilityExtractor] in
+                await readabilityExtractor.cacheArticles(recentArticles)
+            }
+        }
     }
 
     func refreshFeed(_ feed: Feed) async {

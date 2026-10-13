@@ -179,21 +179,6 @@ struct ArticleDetailView: View {
                 }
             }
 
-            if let imageURL = article.imageURL {
-                AsyncImage(url: imageURL) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(maxHeight: 250)
-                            .clipped()
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                    default:
-                        EmptyView()
-                    }
-                }
-            }
         }
     }
 
@@ -204,8 +189,13 @@ struct ArticleDetailView: View {
     private var articleBody: some View {
         Group {
             if isReaderViewActive, let readerContent {
+                let _ = {
+                    print("DEBUG heroImageURL: \(article.imageURL?.absoluteString ?? "nil")")
+                    // Print first 2000 chars of extracted HTML to see structure
+                    print("DEBUG readerContent prefix: \(readerContent.prefix(2000))")
+                }()
                 HTMLContentView(
-                    html: readerContent,
+                    html: HTMLParser.stripReaderViewDuplicates(from: readerContent, heroImageURL: article.imageURL),
                     theme: themeManager.readerTheme,
                     fontSize: themeManager.readerFontSize,
                     contentHeight: $webViewHeight

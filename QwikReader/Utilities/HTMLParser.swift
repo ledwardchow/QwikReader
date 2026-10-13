@@ -61,6 +61,35 @@ enum HTMLParser {
         return result.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    /// Strips the leading <h1> and any <figure> or <img> whose src contains the given URL string.
+    static func stripReaderViewDuplicates(from html: String, heroImageURL: URL?) -> String {
+        var result = html
+
+        // Remove leading <h1>
+        let h1Pattern = "^\\s*<h1[^>]*>.*?</h1>\\s*"
+        if let regex = try? NSRegularExpression(pattern: h1Pattern, options: [.caseInsensitive, .dotMatchesLineSeparators]) {
+            result = regex.stringByReplacingMatches(in: result, range: NSRange(result.startIndex..., in: result), withTemplate: "")
+        }
+
+        // Remove figure or img whose src matches the hero image URL
+        if let imageURL = heroImageURL?.absoluteString {
+            // Escape for use inside a regex pattern
+            let escaped = NSRegularExpression.escapedPattern(for: imageURL)
+            // Match <figure>...</figure> containing this src
+            let figurePattern = "<figure[^>]*>(?:(?!</figure>)[\\s\\S])*\(escaped)(?:(?!</figure>)[\\s\\S])*</figure>"
+            if let regex = try? NSRegularExpression(pattern: figurePattern, options: .caseInsensitive) {
+                result = regex.stringByReplacingMatches(in: result, range: NSRange(result.startIndex..., in: result), withTemplate: "")
+            }
+            // Match standalone <img src="...matchingURL...">
+            let imgPattern = "<img[^>]*src=[\"'][^\"']*\(escaped)[^\"']*[\"'][^>]*/?>\\s*"
+            if let regex = try? NSRegularExpression(pattern: imgPattern, options: .caseInsensitive) {
+                result = regex.stringByReplacingMatches(in: result, range: NSRange(result.startIndex..., in: result), withTemplate: "")
+            }
+        }
+
+        return result
+    }
+
     static func extractFirstImageURL(from html: String) -> String? {
         let pattern = "<img[^>]+src=[\"']([^\"']+)[\"']"
         guard let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) else { return nil }

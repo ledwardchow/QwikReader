@@ -91,7 +91,7 @@ struct SettingsView: View {
                     HStack {
                         Text("Reading View Cache")
                         Spacer()
-                        Text(readabilityExtractor.cacheSize())
+                        Text(readabilityExtractor.cachedSizeString)
                             .foregroundStyle(.secondary)
                     }
 

@@ -13,6 +13,7 @@ final class ReadabilityExtractor: ObservableObject {
     }
 
     @Published var extractionState: [UUID: ExtractionState] = [:]
+    @Published var cachedSizeString: String = "0 KB"
 
     private let fileManager = FileManager.default
     private let cacheDirectory: URL
@@ -21,6 +22,7 @@ final class ReadabilityExtractor: ObservableObject {
         let paths = fileManager.urls(for: .documentDirectory, in: .userDomainMask)
         cacheDirectory = paths[0].appendingPathComponent("ReaderViewCache", isDirectory: true)
         try? fileManager.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
+        cachedSizeString = cacheSize()
     }
 
     // MARK: - Public
@@ -77,14 +79,19 @@ final class ReadabilityExtractor: ObservableObject {
     func clearCache() {
         try? fileManager.removeItem(at: cacheDirectory)
         try? fileManager.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
+        refreshCacheSize()
     }
 
     func cacheSize() -> String {
         let size = directorySize(url: cacheDirectory)
         let formatter = ByteCountFormatter()
-        formatter.allowedUnits = [.useMB, .useGB]
+        formatter.allowedUnits = [.useKB, .useMB, .useGB]
         formatter.countStyle = .file
         return formatter.string(fromByteCount: Int64(size))
+    }
+
+    func refreshCacheSize() {
+        cachedSizeString = cacheSize()
     }
 
     // MARK: - Private
@@ -137,6 +144,7 @@ final class ReadabilityExtractor: ObservableObject {
         try? fileManager.createDirectory(at: articleDir, withIntermediateDirectories: true)
         let path = articleDir.appendingPathComponent("reader.html")
         try? html.write(to: path, atomically: true, encoding: .utf8)
+        refreshCacheSize()
     }
 
     private func directorySize(url: URL) -> UInt64 {
